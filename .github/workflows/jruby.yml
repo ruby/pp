@@ -20,6 +20,7 @@ jobs:
       uses: ruby/setup-ruby@v1.81.0
       with:
         ruby-version: ${{ matrix.ruby }}
+        bundler-cache: true # 'bundle install' and enable caching
     - name: Install dependencies
       run: bundle install
     - name: Build

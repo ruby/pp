@@ -25,5 +25,6 @@ jobs:
       run: bundle exec rake build
     - name: Run test
       run: bundle exec rake test
-    - name: Installation test
-      run: gem install pkg/*.gem
+# Temporarily skipped until a released version of JRuby support 2.7+
+#    - name: Installation test
+#      run: gem install pkg/*.gem

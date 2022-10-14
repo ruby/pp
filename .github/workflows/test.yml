@@ -14,10 +14,11 @@ jobs:
         ruby: [ head, '3.0', '2.7' ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
         exclude:
-        - { os: windows-latest , ruby: head }
+        - { os: windows-latest, ruby: head }
         include:
-        - { os: windows-latest , ruby: mingw }
-        - { os: windows-latest , ruby: mswin }
+        - { os: windows-latest, ruby: mingw }
+        - { os: windows-latest, ruby: mswin }
+        - { os: ubuntu-latest, ruby: 'jruby-9.3', bundle: 'bundle exec' }
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
@@ -25,11 +26,11 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby }}
-    - name: Install dependencies
-      run: bundle install
+        bundler-cache: true # 'bundle install' and enable caching
     - name: Build
-      run: rake build
+      run: ${{matrix.bundle}} rake build
     - name: Run test
-      run: rake test
+      run: ${{matrix.bundle}} rake test
     - name: Installation test
       run: gem install pkg/*.gem
+      if: ${{ !startsWith(matrix.ruby, 'jruby') }}

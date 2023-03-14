@@ -137,6 +137,9 @@ class PP < PrettyPrint
     end
   end
 
+  M_RESPOND_TO = Object.instance_method(:respond_to?)
+  private_constant :M_RESPOND_TO
+
   module PPMethods
 
     # Yields to a block
@@ -188,7 +191,7 @@ class PP < PrettyPrint
     def pp(obj)
       # If obj is a Delegator then use the object being delegated to for cycle
       # detection
-      obj = obj.__getobj__ if defined?(::Delegator) and obj.is_a?(::Delegator)
+      obj = obj.__getobj__ if defined?(::Delegator) and ::Delegator === obj
 
       if check_inspect_key(obj)
         group {obj.pretty_print_cycle self}
@@ -197,7 +200,12 @@ class PP < PrettyPrint
 
       begin
         push_inspect_key(obj)
-        group {obj.pretty_print self}
+
+        if M_RESPOND_TO.bind_call(obj, :pretty_print)
+          group { obj.pretty_print self }
+        else
+          group { Object.instance_method(:pretty_print).bind_call(obj, self) }
+        end
       ensure
         pop_inspect_key(obj) unless PP.sharing_detection
       end
@@ -266,8 +274,15 @@ class PP < PrettyPrint
 
     # A present standard failsafe for pretty printing any given Object
     def pp_object(obj)
+      instance_variables =
+        if M_RESPOND_TO.bind_call(obj, :pretty_print_instance_variables)
+          obj.pretty_print_instance_variables
+        else
+          Object.instance_method(:pretty_print_instance_variables).bind_call(obj)
+        end
+
       object_address_group(obj) {
-        seplist(obj.pretty_print_instance_variables, lambda { text ',' }) {|v|
+        seplist(instance_variables, lambda { text ',' }) {|v|
           breakable
           v = v.to_s if Symbol === v
           text v
@@ -325,7 +340,7 @@ class PP < PrettyPrint
       end
       if inspect_method && inspect_method.owner != Kernel
         q.text self.inspect
-      elsif !inspect_method && self.respond_to?(:inspect)
+      elsif !inspect_method && M_RESPOND_TO.bind_call(self, :inspect)
         q.text self.inspect
       else
         q.pp_object(self)
@@ -346,7 +361,7 @@ class PP < PrettyPrint
     # This method should return an array of names of instance variables as symbols or strings as:
     # +[:@a, :@b]+.
     def pretty_print_instance_variables
-      instance_variables.sort
+      Object.instance_method(:instance_variables).bind_call(self).sort
     end
 
     # Is #inspect implementation using #pretty_print.

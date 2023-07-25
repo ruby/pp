@@ -166,7 +166,10 @@ class PP < PrettyPrint
     def check_inspect_key(id)
       Thread.current[:__recursive_key__] &&
       Thread.current[:__recursive_key__][:inspect] &&
-      Thread.current[:__recursive_key__][:inspect].include?(id)
+      (
+        Thread.current[:__recursive_key__][:inspect].include?(id) ||
+        Thread.current[:__recursive_key__][:inspect].object_id == id.object_id
+      )
     end
 
     # Adds the object_id +id+ to the set of objects being pretty printed, so

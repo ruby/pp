@@ -171,6 +171,11 @@ class PPCycleTest < Test::Unit::TestCase
     assert_equal("#{a.inspect}\n", PP.pp(a, ''.dup))
   end
 
+  def test_thread_current_recursive_key
+    a = Thread.current[:__recursive_key__]
+    assert_equal("{:===>{}, :hash=>{}, :join=>{}, :nonzero?=>{}, :<=>=>{}, :inspect=>{...}}\n", PP.pp(a, ''.dup))
+  end
+
   def test_share_nil
     begin
       PP.sharing_detection = true

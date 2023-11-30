@@ -26,6 +26,7 @@ jobs:
         - { os: windows-latest, ruby: mingw }
         - { os: windows-latest, ruby: mswin }
         - { os: ubuntu-latest, ruby: 'jruby-head', bundle: 'bundle exec' }
+        - { os: ubuntu-latest, ruby: 'truffleruby-head' }
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4

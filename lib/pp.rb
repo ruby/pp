@@ -442,7 +442,7 @@ end if "3.2" <= RUBY_VERSION
 
 class Range # :nodoc:
   def pretty_print(q) # :nodoc:
-    q.pp self.begin
+    q.pp self.begin if self.begin
     q.breakable ''
     q.text(self.exclude_end? ? '...' : '..')
     q.breakable ''

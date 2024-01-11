@@ -140,15 +140,18 @@ class PPCycleTest < Test::Unit::TestCase
     a = S.new(1,2)
     a.b = a
     assert_equal("#<struct Struct::S a=1, b=#<struct Struct::S:...>>\n", PP.pp(a, ''.dup))
-    assert_equal("#{a.inspect}\n", PP.pp(a, ''.dup))
+    assert_equal("#{a.inspect}\n", PP.pp(a, ''.dup)) unless RUBY_ENGINE == "truffleruby"
   end
 
-  if "3.2" <= RUBY_VERSION
+  if defined?(Data.define)
     D = Data.define(:aaa, :bbb)
     def test_data
       a = D.new("aaa", "bbb")
       assert_equal("#<data PPTestModule::PPCycleTest::D\n aaa=\"aaa\",\n bbb=\"bbb\">\n", PP.pp(a, ''.dup, 20))
       assert_equal("#{a.inspect}\n", PP.pp(a, ''.dup))
+
+      b = Data.define(:a).new(42)
+      assert_equal("#{b.inspect}\n", PP.pp(b, ''.dup))
     end
   end
 
@@ -164,7 +167,7 @@ class PPCycleTest < Test::Unit::TestCase
   end
 
   def test_withinspect
-    omit if RUBY_ENGINE == "jruby"
+    omit if RUBY_ENGINE == "jruby" or RUBY_ENGINE == "truffleruby"
     a = []
     a << HasInspect.new(a)
     assert_equal("[<inspect:[...]>]\n", PP.pp(a, ''.dup))

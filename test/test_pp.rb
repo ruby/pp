@@ -16,6 +16,17 @@ class PPTest < Test::Unit::TestCase
     assert_equal("[0,\n 1,\n 2,\n 3]\n", PP.pp([0,1,2,3], ''.dup, 11))
   end
 
+  def test_basic_object
+    foo_class = Class.new(Object) do
+      def initialize
+        @obj = BasicObject.new
+      end
+    end
+    assert_match(/#<BasicObject:.*>/, PP.pp(BasicObject.new, ''.dup, 12))
+    assert_match(/\[0,\n 1,\n 2,\n #<BasicObject:.*>\]\n/, PP.pp([0,1,2, BasicObject.new], ''.dup, 12))
+    assert_match(/#<#<Class:.*>:.*\n @obj=\n  #<BasicObject:.*>>/, PP.pp(foo_class.new, ''.dup, 12))
+  end
+
   OverriddenStruct = Struct.new("OverriddenStruct", :members, :class)
   def test_struct_override_members # [ruby-core:7865]
     a = OverriddenStruct.new(1,2)

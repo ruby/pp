@@ -36,6 +36,7 @@ jobs:
       with:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true # 'bundle install' and enable caching
+        windows-toolchain: none # no extension
     - name: Build
       run: ${{matrix.bundle}} rake build
     - name: Run test

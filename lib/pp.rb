@@ -93,23 +93,16 @@ class PP < PrettyPrint
   # width_for).
   #
   # PP.pp returns +out+.
-  def PP.pp(obj, out=$>, width=width_for(out))
-    q = new(out, width)
-    q.guard_inspect_key {q.pp obj}
-    q.flush
-    #$pp = q
-    out << "\n"
+  def PP.pp(obj, *args, **options)
+    new(*args, **options).print(obj)
   end
 
   # Outputs +obj+ to +out+ like PP.pp but with no indent and
   # newline.
   #
   # PP.singleline_pp returns +out+.
-  def PP.singleline_pp(obj, out=$>)
-    q = SingleLine.new(out)
-    q.guard_inspect_key {q.pp obj}
-    q.flush
-    out
+  def PP.singleline_pp(obj, *args, **options)
+    SingleLine.new(*args, **options).print(obj)
   end
 
   # :stopdoc:
@@ -141,6 +134,19 @@ class PP < PrettyPrint
 
   # Module that defines helper methods for pretty_print.
   module PPMethods
+    # Initialize +out+ option
+    def initialize(_out=$>, width=nil, out: _out)
+      super(out, width)
+    end
+
+    # Pretty print single object
+    def print(obj)
+      guard_inspect_key {pp obj}
+      flush
+      text(newline) if newline
+      output
+    end
+
 
     # Yields to a block
     # and preserves the previous set of objects being printed.
@@ -341,8 +347,17 @@ class PP < PrettyPrint
 
   include PPMethods
 
+  # Create pretty print object.
+  def initialize(_out=$>, _width=nil, out: _out,
+                 width: _width || self.class.width_for(out), **options)
+    super(out, width, **options)
+  end
+
   class SingleLine < PrettyPrint::SingleLine # :nodoc:
     include PPMethods
+    attr_reader :output
+    def newline
+    end
   end
 
   module ObjectMixin # :nodoc:
@@ -728,10 +743,17 @@ module Kernel
   # prints arguments in pretty form.
   #
   # +#pp+ returns argument(s).
-  def pp(*objs)
-    objs.each {|obj|
-      PP.pp(obj)
-    }
+  def pp(*objs, **options)
+    if objs.empty?
+      unless Hash.ruby2_keywords_hash?(options)
+        # TODO: Remove this block when dropping ruby 2.7 support
+        PP.new.print(options)
+        return options
+      end
+      return
+    end
+    q = PP.new(**options)
+    objs.each {|obj| q.print(obj)}
     objs.size <= 1 ? objs.first : objs
   end
   module_function :pp

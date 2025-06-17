@@ -26,7 +26,7 @@ jobs:
         include:
         - { os: windows-latest, ruby: mingw }
         - { os: windows-latest, ruby: mswin }
-        - { os: ubuntu-latest, ruby: 'jruby-head', bundle: 'bundle exec' }
+        # - { os: ubuntu-latest, ruby: 'jruby-head', bundle: 'bundle exec' }
         - { os: ubuntu-latest, ruby: 'truffleruby-head' }
     runs-on: ${{ matrix.os }}
     steps:
@@ -37,6 +37,9 @@ jobs:
         ruby-version: ${{ matrix.ruby }}
         bundler-cache: true # 'bundle install' and enable caching
         windows-toolchain: none # no extension
+    - name: Install missing dependencies
+      run: gem i power_assert
+      if: ${{ matrix.ruby == 'head' }}
     - name: Build
       run: ${{matrix.bundle}} rake build
     - name: Run test

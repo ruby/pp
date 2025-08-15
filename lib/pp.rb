@@ -444,18 +444,16 @@ end
 
 class Set # :nodoc:
   def pretty_print(pp)  # :nodoc:
-    pp.group(1, '#<Set:', '>') {
-      pp.breakable
-      pp.group(1, '{', '}') {
-        pp.seplist(self) { |o|
-          pp.pp o
-        }
+    pp.group(1, "#{self.class.name}[", ']') {
+      pp.seplist(self) { |o|
+        pp.pp o
       }
     }
   end
 
   def pretty_print_cycle(pp)    # :nodoc:
-    pp.text sprintf('#<Set: {%s}>', empty? ? '' : '...')
+    name = self.class.name
+    pp.text(empty? ? "#{name}[]" : "#{name}[...]")
   end
 end
 

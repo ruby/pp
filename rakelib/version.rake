@@ -48,4 +48,30 @@ namespace :dev do
   task "tag" do
     helper.__send__(:tag_version)
   end
+
+  task "require", ['version'] do |_, args|
+    version = args['version']
+    files = []
+    spec = helper.spec_path
+    content = File.read(spec)
+    if content.sub!(/\.required_ruby_version *= *Gem::Requirement.new\(">=\s*\K.*(?="\))/) do
+         [$&, version].max
+       end
+      File.write(spec, content)
+      files << spec
+    end
+    min_version = Gem::Version.new(version).segments[0, 2].join(".")
+    Dir.glob(".github/workflows/*.yml") do |yml|
+      content = File.read(yml)
+      if content.sub!(/^( +)ruby-versions:\n(?:(?:\1 +.*)?\n)*?\1 +min_version: \K.*/) do
+           [$&, min_version].max
+         end
+        File.write(yml, content)
+        files << yml
+      end
+    end
+    sh(*%w[git commit -m],
+       "Update minimum required version to #{version}",
+       *files)
+  end
 end

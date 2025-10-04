@@ -14,7 +14,7 @@ class << (helper = Bundler::GemHelper.instance)
   end
 
   def commit_bump
-    sh(%W[git commit -m bump\ up\ to\ #{gemspec.version}
+    sh(%W[git commit -m Bump\ up\ to\ #{gemspec.version}
           #{SOURCE_PATH}])
   end
 

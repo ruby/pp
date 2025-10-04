@@ -25,19 +25,22 @@ class << (helper = Bundler::GemHelper.instance)
   end
 end
 
-major, minor, teeny = helper.gemspec.version.segments
+major, minor, teeny, dev = helper.gemspec.version.segments
 
 namespace :dev do
-  task "bump:teeny" do
-    helper.version = Gem::Version.new("#{major}.#{minor}.#{teeny+1}")
+  task "bump:teeny", ['dev'] do |_, args|
+    dev = args[:dev] and dev = ".#{dev}"
+    helper.version = Gem::Version.new("#{major}.#{minor}.#{teeny+1}#{dev}")
   end
 
-  task "bump:minor" do
-    helper.version = Gem::Version.new("#{major}.#{minor+1}.0")
+  task "bump:minor", ['dev'] do |_, args|
+    dev = args[:dev] and dev = ".#{dev}"
+    helper.version = Gem::Version.new("#{major}.#{minor+1}.0#{dev}")
   end
 
-  task "bump:major" do
-    helper.version = Gem::Version.new("#{major+1}.0.0")
+  task "bump:major", ['dev'] do |_, args|
+    dev = args[:dev] and dev = ".#{dev}"
+    helper.version = Gem::Version.new("#{major+1}.0.0#{dev}")
   end
 
   task "bump" => "bump:teeny"

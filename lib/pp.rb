@@ -150,7 +150,7 @@ class PP < PrettyPrint
     end
 
     # Returns strings to turn highlight on and off.
-    def highlight?(e)
+    def highlight?(e, k = nil)
       if @highlight&.include?(e)
         return "\e[1;4m", "\e[22;24m"
       end
@@ -330,7 +330,7 @@ class PP < PrettyPrint
           if k.inspect.match?(%r[\A:["$@!]|[%&*+\-\/<=>@\]^`|~]\z])
             k = k.to_s.inspect
           end
-          h, e = highlight?(:keys)
+          h, e = highlight?(:keys, k)
           text "#{h}#{k}#{e}:", k.length+1
         else
           pp k

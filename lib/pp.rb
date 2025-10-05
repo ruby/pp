@@ -134,9 +134,11 @@ class PP < PrettyPrint
 
   # Module that defines helper methods for pretty_print.
   module PPMethods
-    # Initialize +out+ option
-    def initialize(_out=$>, width=nil, out: _out)
+    # Initialize +out+ and +highlight+ options
+    def initialize(_out=$>, width=nil, out: _out,
+                   highlight: ([:keys] if out.respond_to?(:tty?) and out.tty?))
       super(out, width)
+      @highlight = highlight
     end
 
     # Pretty print single object
@@ -147,6 +149,12 @@ class PP < PrettyPrint
       output
     end
 
+    # Returns strings to turn highlight on and off.
+    def highlight?(e)
+      if @highlight&.include?(e)
+        return "\e[1;4m", "\e[22;24m"
+      end
+    end
 
     # Yields to a block
     # and preserves the previous set of objects being printed.
@@ -322,7 +330,8 @@ class PP < PrettyPrint
           if k.inspect.match?(%r[\A:["$@!]|[%&*+\-\/<=>@\]^`|~]\z])
             k = k.to_s.inspect
           end
-          text "#{k}:"
+          h, e = highlight?(:keys)
+          text "#{h}#{k}#{e}:", k.length+1
         else
           pp k
           text ' '

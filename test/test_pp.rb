@@ -312,6 +312,16 @@ end
 class PPDelegateTest < Test::Unit::TestCase
   class A < DelegateClass(Array); end
 
+  class Delegated < SimpleDelegator
+    def inspect
+      "<delegated>"
+    end
+
+    def pretty_print(q)
+      q.text inspect
+    end
+  end
+
   def test_delegate
     assert_equal("[]\n", A.new([]).pretty_inspect, "[ruby-core:25804]")
   end
@@ -326,6 +336,12 @@ class PPDelegateTest < Test::Unit::TestCase
     delegator_cycle_pretty_inspect = a.pretty_inspect
 
     assert_equal(cycle_pretty_inspect, delegator_cycle_pretty_inspect)
+  end
+
+  def test_delegate_pretty_print
+    parent = HasPrettyPrint.new nil
+    delegated = Delegated.new(parent)
+    assert_equal("<delegated>\n", delegated.pretty_inspect)
   end
 end
 

@@ -69,9 +69,9 @@ class PP < PrettyPrint
   # Returns the usable width for +out+.
   # As the width of +out+:
   # 1. If +out+ is assigned to a tty device, its width is used.
-  # 2. Otherwise, or it could not get the value, the +COLUMN+
+  # 2. Otherwise, or it could not get a positive value, the +COLUMNS+
   #    environment variable is assumed to be set to the width.
-  # 3. If +COLUMN+ is not set to a non-zero number, 80 is assumed.
+  # 3. If +COLUMNS+ is not set to a positive number, 80 is assumed.
   #
   # And finally, returns the above width value - 1.
   # * This -1 is for Windows command prompt, which moves the cursor to

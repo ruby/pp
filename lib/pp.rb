@@ -82,7 +82,8 @@ class PP < PrettyPrint
       _, width = out.winsize
     rescue LoadError, NoMethodError, SystemCallError
     end
-    (width || ENV['COLUMNS']&.to_i&.nonzero? || 80) - 1
+    width = ENV['COLUMNS'].to_i unless width && width > 0
+    (width > 0 ? width : 80) - 1
   end
 
   # Outputs +obj+ to +out+ in pretty printed format of

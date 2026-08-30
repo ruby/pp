@@ -210,11 +210,28 @@ class PP < PrettyPrint
       end
 
       guard_inspect(key) do
-        obj = key if delegated and !obj.respond_to?(:pretty_print)
+        custom_inspect = false
+        if delegated
+          delegator_class = obj.class
+          unless delegator_class.public_method_defined?(:pretty_print)
+            singleton_methods = obj.singleton_methods(false)
+            custom_inspect =
+              !singleton_methods.include?(:pretty_print) &&
+              (delegator_class.public_method_defined?(:inspect) ||
+               singleton_methods.include?(:inspect))
+          end
+        end
+        obj = key if delegated && !custom_inspect && !obj.respond_to?(:pretty_print)
         group do
-          obj.pretty_print self
-        rescue NoMethodError
-          text Kernel.instance_method(:inspect).bind_call(obj)
+          if custom_inspect
+            text obj.inspect
+          else
+            begin
+              obj.pretty_print self
+            rescue NoMethodError
+              text Kernel.instance_method(:inspect).bind_call(obj)
+            end
+          end
         end
       end
     end

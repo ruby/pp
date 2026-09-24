@@ -94,6 +94,12 @@ class PrettyPrintInspectWithoutPrettyPrint
   alias inspect pretty_print_inspect
 end
 
+class PrettyPrintRaises
+  def pretty_print(q)
+    self.missing_from_pretty_print
+  end
+end
+
 class PPInspectTest < Test::Unit::TestCase
   def test_hasinspect
     a = HasInspect.new(1)
@@ -156,6 +162,11 @@ class PPInspectTest < Test::Unit::TestCase
   def test_basic_object
     a = BasicObject.new
     assert_match(/\A#<BasicObject:0x[\da-f]+>\n\z/, PP.pp(a, ''.dup))
+  end
+
+  def test_pretty_print_error
+    error = assert_raise(NoMethodError) { PP.pp(PrettyPrintRaises.new, ''.dup) }
+    assert_equal(:missing_from_pretty_print, error.name)
   end
 end
 

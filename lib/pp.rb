@@ -292,7 +292,7 @@ class PP < PrettyPrint
           text '='
           group(1) {
             breakable ''
-            pp(obj.instance_eval(v))
+            pp(PP.mcall(obj, Kernel, :instance_variable_get, v))
           }
         }
       }

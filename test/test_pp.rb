@@ -312,6 +312,24 @@ end
 class PPDelegateTest < Test::Unit::TestCase
   class A < DelegateClass(Array); end
 
+  class Delegated < SimpleDelegator
+    def pretty_print(q)
+      q.text "<delegated>"
+    end
+  end
+
+  class Inspected < SimpleDelegator
+    def inspect
+      "<delegated inspect>"
+    end
+  end
+
+  class RaisingInspect < SimpleDelegator
+    def inspect
+      self.missing_from_inspect
+    end
+  end
+
   def test_delegate
     assert_equal("[]\n", A.new([]).pretty_inspect, "[ruby-core:25804]")
   end
@@ -326,6 +344,35 @@ class PPDelegateTest < Test::Unit::TestCase
     delegator_cycle_pretty_inspect = a.pretty_inspect
 
     assert_equal(cycle_pretty_inspect, delegator_cycle_pretty_inspect)
+  end
+
+  def test_delegate_pretty_print
+    delegated = Delegated.new(HasPrettyPrint.new(nil))
+    assert_equal("<delegated>\n", PP.pp(delegated, ''.dup))
+  end
+
+  def test_delegate_inspect
+    delegated = Inspected.new(HasInspect.new(:target))
+    assert_equal("<delegated inspect>\n", PP.pp(delegated, ''.dup))
+  end
+
+  def test_delegate_singleton_inspect
+    delegated = SimpleDelegator.new(HasInspect.new(:target))
+    def delegated.inspect() "<delegated inspect>" end
+
+    assert_equal("<delegated inspect>\n", PP.pp(delegated, ''.dup))
+  end
+
+  def test_delegate_inspect_error
+    error = assert_raise(NoMethodError) do
+      PP.pp(RaisingInspect.new(HasInspect.new(:target)), ''.dup)
+    end
+    assert_equal(:missing_from_inspect, error.name)
+  end
+
+  def test_delegate_basic_object
+    delegated = SimpleDelegator.new(BasicObject.new)
+    assert_match(/\A#<BasicObject:0x[\da-f]+>\n\z/, PP.pp(delegated, ''.dup))
   end
 end
 

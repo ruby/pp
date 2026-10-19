@@ -527,8 +527,8 @@ end if has_data_define
 
 class Range # :nodoc:
   def pretty_print(q) # :nodoc:
-    begin_nil = self.begin == nil
-    end_nil = self.end == nil
+    begin_nil = nil.equal?(self.begin)
+    end_nil = nil.equal?(self.end)
     q.pp self.begin if !begin_nil || end_nil
     q.breakable ''
     q.text(self.exclude_end? ? '...' : '..')

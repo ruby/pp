@@ -210,7 +210,11 @@ class PP < PrettyPrint
       guard_inspect(obj) do
         group do
           obj.pretty_print self
-        rescue NoMethodError
+        rescue NoMethodError => error
+          raise unless
+            error.name == :pretty_print &&
+            error.receiver.equal?(obj) &&
+            !PP.mcall(obj, Kernel, :respond_to?, :pretty_print)
           text Kernel.instance_method(:inspect).bind_call(obj)
         end
       end

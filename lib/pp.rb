@@ -473,7 +473,7 @@ class Struct # :nodoc:
         q.text '='
         q.group(1) {
           q.breakable ''
-          q.pp self[member]
+          q.pp PP.mcall(self, Struct, :[], member)
         }
       }
     }

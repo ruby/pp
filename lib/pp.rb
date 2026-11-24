@@ -200,18 +200,38 @@ class PP < PrettyPrint
     def pp(obj)
       # If obj is a Delegator then use the object being delegated to for cycle
       # detection
-      obj = obj.__getobj__ if defined?(::Delegator) and ::Delegator === obj
+      delegated = defined?(::Delegator) && ::Delegator === obj
+      key = delegated ? obj.__getobj__ : obj
 
-      if check_inspect_key(obj)
+      if check_inspect_key(key)
+        obj = key if delegated and !obj.respond_to?(:pretty_print_cycle)
         group {obj.pretty_print_cycle self}
         return
       end
 
-      guard_inspect(obj) do
+      guard_inspect(key) do
+        custom_inspect = false
+        if delegated
+          delegator_class = obj.class
+          unless delegator_class.public_method_defined?(:pretty_print)
+            singleton_methods = obj.singleton_methods(false)
+            custom_inspect =
+              !singleton_methods.include?(:pretty_print) &&
+              (delegator_class.public_method_defined?(:inspect) ||
+               singleton_methods.include?(:inspect))
+          end
+        end
+        obj = key if delegated && !custom_inspect && !obj.respond_to?(:pretty_print)
         group do
-          obj.pretty_print self
-        rescue NoMethodError
-          text Kernel.instance_method(:inspect).bind_call(obj)
+          if custom_inspect
+            text obj.inspect
+          else
+            begin
+              obj.pretty_print self
+            rescue NoMethodError
+              text Kernel.instance_method(:inspect).bind_call(obj)
+            end
+          end
         end
       end
     end

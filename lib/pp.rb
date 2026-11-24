@@ -82,6 +82,9 @@ class PP < PrettyPrint
       _, width = out.winsize
     rescue LoadError, NoMethodError, SystemCallError
     end
+    # winsize can report 0 for a non-tty or constrained device; treat that
+    # like a missing width so we fall back to COLUMNS / 80 instead of -1.
+    width = nil unless width&.nonzero?
     (width || ENV['COLUMNS']&.to_i&.nonzero? || 80) - 1
   end
 
@@ -220,7 +223,8 @@ class PP < PrettyPrint
     #
     #   group(1, '#<' + obj.class.name, '>') { ... }
     def object_group(obj, &block) # :yield:
-      group(1, '#<' + obj.class.name, '>', &block)
+      # Anonymous classes have a nil #name; #to_s still yields a usable label.
+      group(1, '#<' + (obj.class.name || obj.class.to_s), '>', &block)
     end
 
     # A convenience method, like object_group, but also reformats the Object's

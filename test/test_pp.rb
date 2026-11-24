@@ -46,6 +46,20 @@ class PPTest < Test::Unit::TestCase
     assert_equal("false..false\n", PP.pp(false..false, "".dup))
     assert_equal("nil..nil\n", PP.pp(nil..nil, "".dup))
   end
+
+  def test_width_for_zero_winsize
+    out = Object.new
+    def out.winsize; [24, 0]; end
+    assert_equal(79, PP.width_for(out))
+  end
+
+  def test_object_group_anonymous_class
+    obj = Class.new.new
+    q = PP.new("".dup)
+    q.object_group(obj) { q.text "x" }
+    q.flush
+    assert_match(/\A#<#<Class:0x[0-9a-f]+>x>\z/, q.output)
+  end
 end
 
 class HasInspect
